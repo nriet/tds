@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015 The University of Reading
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 3. Neither the name of the University of Reading, nor the names of the
  * authors or contributors may be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import ucar.nc2.dataset.NetcdfDatasets;
 import uk.ac.rdg.resc.edal.exceptions.EdalException;
 import uk.ac.rdg.resc.edal.graphics.exceptions.EdalLayerNotFoundException;
+import uk.ac.rdg.resc.edal.wms.NrietWmsServlet;
 import uk.ac.rdg.resc.edal.wms.RequestParams;
 import uk.ac.rdg.resc.edal.wms.WmsCatalogue;
 import uk.ac.rdg.resc.edal.wms.WmsServlet;
@@ -56,7 +57,7 @@ import ucar.nc2.dataset.NetcdfDataset;
 /**
  * An example {@link WmsServlet} which uses the THREDDS catalogue to supply
  * data.
- * 
+ *
  * This is example is well commented and demonstrates how to properly integrate
  * the EDAL WMS into the THREDDS catalogue. It doesn't show how to implement
  * caching, or WMS-specific configuration, but these things are recommended in
@@ -89,12 +90,12 @@ public class ThreddsWmsServlet extends WmsServlet {
   };
 
   private static final Cache<String, CachedWmsCatalogue> catalogueCache =
-      CacheBuilder.newBuilder().maximumSize(100).removalListener(removalListener).recordStats().build();
+          CacheBuilder.newBuilder().maximumSize(100).removalListener(removalListener).recordStats().build();
 
   @Override
   @RequestMapping(value = "**", method = {RequestMethod.GET})
   protected void dispatchWmsRequest(String request, RequestParams params, HttpServletRequest httpServletRequest,
-      HttpServletResponse httpServletResponse, WmsCatalogue wmsCatalogue) throws Exception {
+                                    HttpServletResponse httpServletResponse, WmsCatalogue wmsCatalogue) throws Exception {
     /*
      * The super implementation of this gets called with a servlet-wide
      * catalogue, which "should" have been injected with the
@@ -113,6 +114,21 @@ public class ThreddsWmsServlet extends WmsServlet {
     ThreddsWmsCatalogue catalogue = acquireCatalogue(httpServletRequest, httpServletResponse, tdsDataset.getPath());
 
     /*
+     * 如果用户请求了raw格式的实际数据...
+     */
+    if (params.getString("format", "").equalsIgnoreCase("application/nraw")) {
+      NrietWmsServlet.getWmsMapNraw(params,httpServletResponse,catalogue);
+      return;
+    }else if (params.getString("format", "").equalsIgnoreCase("application/ntransect")) {
+      NrietWmsServlet.getTransect(params, httpServletResponse, catalogue);
+      return;
+    }else if (params.getString("format", "").equalsIgnoreCase("application/ngriddata")) {
+      NrietWmsServlet.getWmsMapGridData(params, httpServletResponse, catalogue);
+      return;
+    }
+
+
+    /*
      * Now that we've got a WmsCatalogue, we can pass this request to the
      * super implementation which will handle things from here.
      */
@@ -120,7 +136,7 @@ public class ThreddsWmsServlet extends WmsServlet {
   }
 
   private ThreddsWmsCatalogue acquireCatalogue(HttpServletRequest httpServletRequest,
-      HttpServletResponse httpServletResponse, String tdsDatasetPath) throws IOException {
+                                               HttpServletResponse httpServletResponse, String tdsDatasetPath) throws IOException {
 
     invalidateIfOutdated(tdsDatasetPath);
 
@@ -157,13 +173,13 @@ public class ThreddsWmsServlet extends WmsServlet {
     final CachedWmsCatalogue cachedWmsCatalogue = catalogueCache.getIfPresent(tdsDatasetPath);
 
     if (cachedWmsCatalogue != null
-        && cachedWmsCatalogue.lastModified != cachedWmsCatalogue.wmsCatalogue.getLastModified()) {
+            && cachedWmsCatalogue.lastModified != cachedWmsCatalogue.wmsCatalogue.getLastModified()) {
       catalogueCache.invalidate(tdsDatasetPath);
     }
   }
 
   private static NetcdfDataset acquireNetcdfDataset(HttpServletRequest httpServletRequest,
-      HttpServletResponse httpServletResponse, String tdsDatasetPath) throws IOException {
+                                                    HttpServletResponse httpServletResponse, String tdsDatasetPath) throws IOException {
     NetcdfFile ncf = TdsRequestedDataset.getNetcdfFile(httpServletRequest, httpServletResponse, tdsDatasetPath);
     if (TdsRequestedDataset.useNetcdfJavaBuilders()) {
       return NetcdfDatasets.enhance(ncf, NetcdfDataset.getDefaultEnhanceMode(), null);

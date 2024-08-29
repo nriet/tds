@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE wmsConfig SYSTEM "https://schemas.unidata.ucar.edu/thredds/dtd/ncwms/wmsConfig.dtd">
+<!DOCTYPE wmsConfig SYSTEM "/usr/local/tomcat/content/thredds/wmsConfig.dtd">
 <!--
+<!DOCTYPE wmsConfig SYSTEM "https://schemas.unidata.ucar.edu/thredds/dtd/ncwms/wmsConfig.dtd">
 Detailed configuration of the WMS service.  This config file can be used to
 set default styling parameters for each dataset/variable, and to enable or disable
 the GetFeatureInfo operation.

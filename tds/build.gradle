@@ -267,7 +267,7 @@ test {
 }
 
 gretty {
-  httpPort = 8081
+  httpPort = 8082
   contextPath = '/thredds'
   jvmArgs = jvmArguments
 }

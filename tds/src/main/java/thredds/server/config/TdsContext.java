@@ -287,7 +287,12 @@ public final class TdsContext implements ServletContextAware, InitializingBean, 
         logServerStartup.info("TdsContext.init(): Copying default WMS config file from {}.", defaultWmsConfigXmlFile);
         IO.copyFile(defaultWmsConfigXmlFile, wmsConfigXmlFile);
       }
-
+      File wmsConfigDtdFile = new File(threddsDirectory, "wmsConfig.dtd");
+      if (!wmsConfigDtdFile.exists()) {
+        File defaultWmsConfigDtdFile = new File(startupContentDirectory, "wmsConfig.dtd");
+        logServerStartup.info("TdsContext.init(): Copying default WMS config file from {}.", defaultWmsConfigDtdFile);
+        IO.copyFile(defaultWmsConfigDtdFile, wmsConfigDtdFile);
+      }
       File customTemplateFragmentsFile = new File(templatesDirectory, "tdsTemplateFragments.html");
       if (!customTemplateFragmentsFile.exists()) {
         File defaultTemplateFragmentsFile = new File(startupContentDirectory, "tdsTemplateFragments.html");
