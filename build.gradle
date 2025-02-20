@@ -26,8 +26,6 @@ buildscript {
       filter {
         includeModule 'com.burgstaller', 'okhttp-digest'
         includeModule 'org.ysb33r.gradle', 'grolifant'
-        includeModule 'edu.ucar.unidata.site', 'jekyll-plugin'
-        includeModule 'edu.ucar.unidata.site', 'jekyll-gems'
         includeModule 'edu.ucar.unidata', 'unidata-nexus-gradle'
       }
     }
@@ -40,7 +38,6 @@ buildscript {
     classpath buildPlugins.spotless
     classpath buildPlugins.protobuf
     classpath buildPlugins.nexus
-    classpath buildPlugins.jekyll
     classpath buildPlugins.depcheck
   }
 }
@@ -51,7 +48,7 @@ allprojects {
   // Matches Maven's "project.version". Used in MANIFEST.MF for "Implementation-Version".
   // We try to follow semantic versioning, and thus we use <major>.<minor>.<patch>-<prerelease version>
   // <prerelease version> may be SNAPSHOT, alphax, betax, etc.
-  version = '5.6-SNAPSHOT'
+  version = '5.7-SNAPSHOT'
   // Eventually, we'll stop appending "SNAPSHOT" to our versions and just use this.
   status = 'development'
 }
@@ -100,6 +97,9 @@ ext {
 }
 
 tasks.named('wrapper') {
+  // when upgrading, be sure to run the wrapper task twice to ensure
+  // gradle-wrapper .jar, .properties, and wrapper scripts are
+  // upgraded.
   distributionType = Wrapper.DistributionType.ALL
   gradleVersion = '7.6.4'
 }
